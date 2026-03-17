@@ -45,19 +45,25 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=27
 
 ## 🎯 Features
 
-### 🛠️ CLI Tools (9 Tools - All Tested ✅)
+### 🛠️ CLI Tools (13 Tools - All Tested ✅)
 
-| Tool | Purpose | Status |
-|------|---------|--------|
-| **runescape-api.py** | Full API client (GE, Hiscores, Clans, Runemetrics) | ✅ Production |
-| **citadel-cap-tracker.py** | Track clan citadel capping activity | ✅ Production |
-| **inactive-members.py** | Find inactive clan members (X+ days) | ✅ Production |
-| **player-lookup.py** | Player profile lookup (RS3 + OSRS) | ✅ Production |
-| **price-alert.py** | GE price monitoring with webhook alerts | ✅ Production |
-| **ge-arbitrage.py** | Arbitrage opportunity detector with profit calc | ✅ Production |
-| **osrs-hiscores.py** | 🆕 OSRS hiscores lookup | ✅ Production |
-| **portfolio-tracker.py** | 🆕 Wealth & investment tracking | ✅ Production |
-| **auto-report.py** | 🆕 Automated report generation | ✅ Production |
+**All tools support both RS3 and OSRS!**
+
+| Tool | Purpose | RS3 | OSRS |
+|------|---------|-----|------|
+| **runescape-api.py** | Full API client (GE, Hiscores, Clans) | ✅ | ✅ |
+| **citadel-cap-tracker.py** | Clan citadel capping (RS3 only) | ✅ | ❌ |
+| **inactive-members.py** | Inactive clan members (RS3 only) | ✅ | ❌ |
+| **player-lookup.py** | Player profile lookup | ✅ | ✅ |
+| **price-alert.py** | GE price monitoring | ✅ | ✅ |
+| **ge-arbitrage.py** | Arbitrage detection | ✅ | ✅ |
+| **osrs-hiscores.py** | Hiscores lookup | ✅ | ✅ |
+| **portfolio-tracker.py** | Wealth tracking | ✅ | ✅ |
+| **auto-report.py** | Automated reports | ✅ | ✅ |
+| **advanced-trading.py** | Advanced trading strategies | ✅ | ✅ |
+| **pvp-loot-calculator.py** | PvP loot tracking | ✅ | ✅ |
+| **collection-log.py** | Collection log tracker | ✅ | ✅ |
+| **multi-clan-compare.py** | Multi-clan comparison (RS3) | ✅ | ❌ |
 
 **All tools support:**
 - ✅ `--json` flag for agent integration
@@ -167,19 +173,21 @@ python3 tools/auto-report.py --type clan --clan "Lords of Arcadia" --email user@
 python3 tools/auto-report.py --type portfolio --webhook https://discord.com/webhook/...
 ```
 
-### Player Lookup
+### Player Lookup (RS3 + OSRS)
 ```bash
-# Basic lookup
+# RS3 lookup
 python3 tools/player-lookup.py --player "Zezima"
+python3 tools/osrs-hiscores.py --player "Zezima" --game rs3
+
+# OSRS lookup
+python3 tools/player-lookup.py --player "Zezima" --osrs
+python3 tools/osrs-hiscores.py --player "Zezima" --game osrs
 
 # Full profile with activity
 python3 tools/player-lookup.py --player "Zezima" --full
 
-# OSRS hiscores
-python3 tools/player-lookup.py --player "Zezima" --osrs --json
-
-# Dedicated OSRS tool
-python3 tools/osrs-hiscores.py --player "Zezima"
+# JSON output
+python3 tools/osrs-hiscores.py --player "Zezima" --game rs3 --json
 ```
 
 ### GE Trading

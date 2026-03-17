@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
-OSRS Hiscores Tool - Lobster Edition
-=====================================
-Lookup Old School RuneScape player hiscores.
+RS3 & OSRS Hiscores Tool - Lobster Edition
+==========================================
+Lookup player hiscores for both RS3 and OSRS.
+
+Cross-platform: Windows/Linux/macOS compatible
 
 Usage:
-    python3 tools/osrs-hiscores.py --player "Zezima"
+    python3 tools/osrs-hiscores.py --player "Zezima" --game osrs
+    python3 tools/osrs-hiscores.py --player "Zezima" --game rs3
     python3 tools/osrs-hiscores.py --player "Zezima" --json
 """
 
@@ -19,7 +22,17 @@ except ImportError:
     print("❌ requests library not installed. Run: pip install -r requirements.txt")
     sys.exit(1)
 
+# Both RS3 and OSRS hiscores
+RS3_HISCORES = "https://secure.runescape.com/m=hiscore"
 OSRS_HISCORES = "https://secure.runescape.com/m=hiscore_oldschool"
+
+RS3_SKILLS = [
+    "Overall", "Attack", "Defence", "Strength", "Constitution", "Ranged",
+    "Prayer", "Magic", "Cooking", "Woodcutting", "Fletching", "Fishing",
+    "Firemaking", "Crafting", "Smithing", "Mining", "Herblore", "Agility",
+    "Thieving", "Slayer", "Farming", "Runecrafting", "Hunter", "Construction",
+    "Summoning", "Dungeoneering", "Divination", "Invention", "Archaeology", "Necromancy"
+]
 
 OSRS_SKILLS = [
     "Overall", "Attack", "Defence", "Strength", "Hitpoints", "Ranged",
@@ -52,43 +65,35 @@ OSRS_ACTIVITIES = [
 ]
 
 
-def get_osrs_hiscores(player_name: str) -> dict:
-    """Get OSRS hiscores for a player."""
-    url = f"{OSRS_HISCORES}/index_lite.ws?player={player_name}"
+def get_hiscores(player_name: str, game: str = "rs3") -> dict:
+    """Get hiscores for a player (RS3 or OSRS)."""
+    hiscores_url = RS3_HISCORES if game.lower() == "rs3" else OSRS_HISCORES
+    skills_list = RS3_SKILLS if game.lower() == "rs3" else OSRS_SKILLS
+    
+    url = f"{hiscores_url}/index_lite.ws?player={player_name}"
     try:
         response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 RS-Agent/1.0"}, timeout=10)
         if response.status_code != 200:
-            return {"error": "Player not found", "player": player_name}
+            return {"error": "Player not found", "player": player_name, "game": game.upper()}
         
         lines = response.text.strip().split("\n")
-        result = {"player": player_name, "game": "OSRS", "skills": {}, "activities": {}}
+        result = {"player": player_name, "game": game.upper(), "skills": {}}
         
-        # Parse skills (first 24 lines)
-        for i, line in enumerate(lines[:24]):
+        # Parse skills
+        for i, line in enumerate(lines[:len(skills_list)]):
             parts = line.split(",")
             if len(parts) == 3:
                 rank, level, xp = parts
-                skill_name = OSRS_SKILLS[i] if i < len(OSRS_SKILLS) else f"Skill_{i}"
+                skill_name = skills_list[i] if i < len(skills_list) else f"Skill_{i}"
                 result["skills"][skill_name] = {
                     "rank": int(rank) if rank != "-1" else None,
                     "level": int(level) if level != "-1" else None,
                     "xp": int(xp) if xp != "-1" else None
                 }
         
-        # Parse activities (remaining lines)
-        for i, line in enumerate(lines[24:]):
-            parts = line.split(",")
-            if len(parts) == 3:
-                rank, score, _ = parts
-                activity_name = OSRS_ACTIVITIES[i] if i < len(OSRS_ACTIVITIES) else f"Activity_{i}"
-                result["activities"][activity_name] = {
-                    "rank": int(rank) if rank != "-1" else None,
-                    "score": int(score) if score != "-1" else None
-                }
-        
         return result
     except Exception as e:
-        return {"error": str(e), "player": player_name}
+        return {"error": str(e), "player": player_name, "game": game.upper()}
 
 
 def format_xp(xp: int) -> str:
@@ -103,15 +108,14 @@ def format_xp(xp: int) -> str:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="OSRS Hiscores - Lobster Edition")
+    parser = argparse.ArgumentParser(description="RS3 & OSRS Hiscores - Lobster Edition")
     parser.add_argument("--player", type=str, required=True, help="Player name")
+    parser.add_argument("--game", type=str, default="rs3", choices=["rs3", "osrs"], help="Game version")
     parser.add_argument("--json", action="store_true", help="JSON output")
-    parser.add_argument("--skills", action="store_true", help="Show only skills")
-    parser.add_argument("--activities", action="store_true", help="Show only activities")
     
     args = parser.parse_args()
     
-    hiscores = get_osrs_hiscores(args.player)
+    hiscores = get_hiscores(args.player, args.game)
     
     if args.json:
         print(json.dumps(hiscores, indent=2))
@@ -122,10 +126,10 @@ def main():
         print(f"\n💡 Tips:")
         print(f"   - Check spelling (case-sensitive)")
         print(f"   - Player may not exist or be unranked")
-        print(f"   - Try RS3 hiscores instead")
+        print(f"   - Try --game osrs or --game rs3")
         sys.exit(1)
     
-    print(f"\n🎮 OSRS Hiscores - {args.player}")
+    print(f"\n🎮 {hiscores['game']} Hiscores - {args.player}")
     print(f"=" * 60)
     
     if not args.activities:
