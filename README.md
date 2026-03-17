@@ -119,6 +119,12 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=27
 - Webhook and message tool integration
 - Canvas visualization support
 
+**LM Studio MCP Integration:**
+- Model Context Protocol server (`mcp-server.py`)
+- Direct tool access from LM Studio
+- All 9 tools available as MCP tools
+- See [`docs/MCP-GUIDE.md`](docs/MCP-GUIDE.md) for setup
+
 ---
 
 ## 📚 Documentation
