@@ -1,16 +1,36 @@
 # 🦆 RS-Agent-Skill-Lobster-Edition
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Discord Bot](https://img.shields.io/badge/Discord-Bot-7289da.svg)](https://discord.com/)
+[![OpenClaw](https://img.shields.io/badge/OpenClaw-Agent--First-FF4500.svg)](https://github.com/openclaw/openclaw)
+
 Comprehensive RuneScape API tools and scripts for AI agents and automation.
 
 ## 🚀 Features
 
+### CLI Tools
 - **Grand Exchange API** - Item prices, trends, categories, 180-day history
 - **Hiscores API** - Player stats, rankings, skill tracking (RS3 + OSRS)
 - **Clan API** - Member lists, stats, citadel tracking
 - **Runemetrics API** - Activity logs, quest completion, XP tracking
 - **Citadel Cap Tracker** - Monitor clan citadel capping activity
 - **Inactive Member Tracker** - Find clan members inactive for X+ days
+- **Price Alert Monitor** - GE price monitoring with webhook alerts
+
+### 🤖 Discord Bot
+- **Slash Commands** - 7 RuneScape commands for your server
+- **Beautiful Embeds** - Formatted responses with colors, thumbnails, fields
+- **Auto-Posting** - Daily reports, price alerts, activity summaries
+- **Interactive** - Buttons, dropdowns, pagination, modals
+- **Dashboard** - Live clan statistics and activity graphs
+- **Admin Commands** - Server configuration and management
+
+### Agent Integration
 - **Agent-Friendly** - JSON output, CLI tools, Python library
+- **OpenClaw Skills** - Native OpenClaw integration
+- **Multi-Agent** - Parallel processing and session coordination
+- **Webhooks** - Discord, Slack, custom webhook support
 
 ## 📦 Installation
 
@@ -26,7 +46,7 @@ pip install -r requirements.txt
 chmod +x tools/*.py
 ```
 
-## 🛠️ Tools
+## 🛠️ CLI Tools
 
 ### 1. RuneScape API Client (`tools/runescape-api.py`)
 
@@ -114,6 +134,113 @@ python3 tools/clan-analyzer.py --clan "Lords of Arcadia" --output analysis.json
 # Compare multiple clans
 python3 tools/clan-analyzer.py --clan "Lords of Arcadia" --clan "Efficiency Experts"
 ```
+
+## 🤖 Discord Bot Setup
+
+Full-featured Discord bot with slash commands, embeds, and auto-posting.
+
+### Quick Setup
+
+```bash
+# 1. Install Discord dependencies
+pip install discord.py python-dotenv
+
+# 2. Create Discord Application
+# Go to: https://discord.com/developers/applications
+# Click "New Application" → Name it → Go to "Bot" section
+# Click "Add Bot" → Copy bot token
+
+# 3. Create .env file
+cat > .env << EOF
+DISCORD_BOT_TOKEN=your_bot_token_here
+DISCORD_CLIENT_ID=your_client_id_here
+EOF
+
+# 4. Run the bot
+python3 discord-bot/bot.py
+
+# 5. Invite to your server
+# Replace YOUR_CLIENT_ID with your actual client ID
+https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=274878024768&scope=bot%20applications.commands
+```
+
+### Required Permissions
+
+- **Read Messages/View Channels**
+- **Send Messages**
+- **Embed Links**
+- **Attach Files**
+- **Add Reactions**
+- **Use Application Commands**
+- **Manage Webhooks** (for alerts)
+
+### Slash Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/rs-clan` | Get clan information | `/rs-clan clan:Lords of Arcadia` |
+| `/rs-player` | Lookup player stats | `/rs-player player:Zezima` |
+| `/rs-item` | Check GE price | `/rs-item item:Twisted bow` |
+| `/rs-citadel` | Check citadel caps | `/rs-citadel clan:Lords of Arcadia since:2026-03-11` |
+| `/rs-inactive` | Find inactive members | `/rs-inactive clan:Lords of Arcadia days:90` |
+| `/rs-price-alert` | Set price alert | `/rs-price-alert item:Twisted bow threshold:300000000` |
+| `/rs-track` | Track player progress | `/rs-track player:Zezima skill:Attack` |
+
+### Configuration
+
+Create `discord-bot/config/servers.json`:
+
+```json
+{
+  "servers": {
+    "YOUR_SERVER_ID": {
+      "clan_name": "Lords of Arcadia",
+      "alert_channel": "ALERT_CHANNEL_ID",
+      "report_channel": "REPORT_CHANNEL_ID",
+      "alert_role": "ALERT_ROLE_ID",
+      "auto_post": {
+        "daily_report": true,
+        "citadel_caps": true,
+        "price_alerts": true
+      }
+    }
+  }
+}
+```
+
+### Auto-Posting Features
+
+The bot can automatically post:
+
+- **Daily Clan Reports** - Every day at 8 AM
+- **Citadel Cap Alerts** - When members cap (hourly check)
+- **Price Alerts** - When prices cross thresholds
+- **Activity Summaries** - Weekly member activity
+
+### Interactive Features
+
+- **Buttons** - Refresh data, navigate pages, export
+- **Dropdowns** - Select clans, items, time ranges
+- **Pagination** - Navigate through large results
+- **Modals** - Configure alerts, track players
+- **Dashboard** - `/rs-dashboard` for live clan stats
+
+### Troubleshooting
+
+**Bot not responding?**
+1. Check bot token in `.env`
+2. Ensure bot is online (green dot)
+3. Check Message Content Intent is enabled
+4. Verify bot permissions in server
+
+**Commands not showing?**
+1. Wait up to 1 hour for registration
+2. Re-invite bot to server
+3. Run `python3 discord-bot/setup.py` to re-register
+
+**See full documentation:** [`discord-bot/README.md`](discord-bot/README.md)
+
+---
 
 ## 📖 API Documentation
 
@@ -214,16 +341,49 @@ Create `config/config.json` for default settings:
 - Adjust in `config/config.json` or with `--rate-limit` flag
 - Be respectful - these are free public APIs
 
+## 📚 Documentation
+
+| File | Description |
+|------|-------------|
+| [`AGENTS.md`](AGENTS.md) | Agent-first architecture and OpenClaw integration |
+| [`AGENT-FIRST.md`](AGENT-FIRST.md) | Why agent-first design matters |
+| [`EXAMPLES.md`](EXAMPLES.md) | Copy-paste ready examples and workflows |
+| [`docs/API-REFERENCE.md`](docs/API-REFERENCE.md) | Complete API endpoint reference |
+| [`discord-bot/README.md`](discord-bot/README.md) | Discord bot setup and usage |
+| [`skills/rs-agent/SKILL.md`](skills/rs-agent/SKILL.md) | OpenClaw skill configuration |
+
+## ⚠️ Rate Limiting
+
+- RuneScape APIs have request throttling
+- Default rate limit: 150ms between requests
+- Adjust in `config/config.json` or with `--rate-limit` flag
+- Be respectful - these are free public APIs
+
+## 🤝 Contributing
+
+Contributions welcome! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines.
+
 ## 📝 License
 
-MIT License - See LICENSE file
+MIT License - See [LICENSE](LICENSE) file
 
 ## 🦆 Credits
 
 Created for DuckBot's Lords of Arcadia clan tracking and analysis.
 
+Inspired by [OpenClaw](https://github.com/openclaw/openclaw) agent-first philosophy.
+
+## 🔗 Links
+
+- **Repository:** https://github.com/Franzferdinan51/RS-Agent-Skill-Lobster-Edition
+- **OpenClaw:** https://github.com/openclaw/openclaw
+- **Discord:** https://discord.gg/clawd
+- **RuneScape Wiki API:** https://runescape.wiki/w/Application_programming_interface
+
 ---
 
 **Version:** 1.0.0  
 **Last Updated:** March 17, 2026  
-**Status:** ✅ Operational
+**Status:** ✅ Operational  
+**Total Tools:** 5 CLI + Discord Bot  
+**Total Docs:** 7 files
