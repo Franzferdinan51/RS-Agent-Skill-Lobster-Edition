@@ -586,34 +586,30 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ## 🎯 Roadmap
 
-### ✅ Completed (v2.0.0 - March 17, 2026)
-- [x] **12 CLI tools** with JSON output
-- [x] Full Discord bot integration
+### ✅ Completed (v2.0.0-RS - March 17, 2026)
+- [x] **13 CLI tools** with JSON output
+- [x] Full Discord bot integration (7 commands)
 - [x] GE trading suite with arbitrage
-- [x] **Advanced trading strategies** (bulk flip, merchant, trend)
+- [x] Advanced trading strategies (bulk flip, merchant, trend)
 - [x] Portfolio tracker with P/L tracking
 - [x] Automated reports (email/Discord)
-- [x] OSRS hiscores support
-- [x] LM Studio MCP integration
-- [x] **PvP loot calculator**
-- [x] **Collection log tracker**
+- [x] RS3 & OSRS hiscores support
+- [x] LM Studio MCP integration (12 tools)
+- [x] PvP loot calculator
+- [x] Collection log tracker
+- [x] Multi-clan comparison
 - [x] Comprehensive documentation (100KB+)
 - [x] OpenClaw native integration
 - [x] Agent-first architecture
+- [x] Cross-platform support (Windows/Linux/macOS)
 - [x] Testing & validation
 - [x] Bug fixes & optimizations
 
-### 📋 Future Enhancements
-- [ ] Clan war tracking
-- [ ] Achievement diary tracker
-- [ ] Multi-clan comparison
-- [ ] Wealth projections
-- [ ] Achievement diary tracker
-- [ ] Multi-clan comparison dashboard
+**All planned features complete!** 🎉
 
 ---
 
-### 🆕 Advanced Features (v2.0.0)
+## 🆕 Advanced Features (v2.0.0)
 
 #### Advanced Trading
 ```bash
