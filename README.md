@@ -350,6 +350,31 @@ python3 discord-bot/bot.py
 }
 ```
 
+### LM Studio MCP Integration
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Add to LM Studio MCP config:
+# macOS/Linux: ~/.config/lmstudio/mcp-config.json
+# Windows: %APPDATA%\LMStudio\mcp-config.json
+
+{
+  "mcpServers": {
+    "runescape": {
+      "command": "python3",
+      "args": ["/FULL/PATH/rs-agent-tools/mcp-server.py"],
+      "cwd": "/FULL/PATH/rs-agent-tools",
+      "disabled": false
+    }
+  }
+}
+
+# Restart LM Studio - all 9 tools now available in chat!
+```
+
+**Full MCP Guide:** [`docs/MCP-GUIDE.md`](docs/MCP-GUIDE.md)
+
 ---
 
 ## 🧪 Testing & Validation
@@ -476,24 +501,22 @@ MIT License - See [LICENSE](LICENSE) file for details.
 ## 🎯 Roadmap
 
 ### ✅ Completed (v1.0.0 - March 17, 2026)
-- [x] 6 CLI tools with JSON output
+- [x] 9 CLI tools with JSON output
 - [x] Full Discord bot integration
-- [x] GE trading suite
-- [x] Comprehensive documentation (75KB)
+- [x] GE trading suite with arbitrage
+- [x] Portfolio tracker with P/L tracking
+- [x] Automated reports (email/Discord)
+- [x] OSRS hiscores support
+- [x] LM Studio MCP integration
+- [x] Comprehensive documentation (95KB)
 - [x] OpenClaw native integration
 - [x] Agent-first architecture
 - [x] Testing & validation
 - [x] Bug fixes & optimizations
 
-### 🚧 In Development
-- [ ] Real-time price monitoring dashboard
-- [ ] Machine learning price predictions
-- [ ] Automated trading bot
-- [ ] Mobile app integration
+### 📋 Future Enhancements
 - [ ] More GE trading strategies
-
-### 📋 Planned Features
-- [ ] OSRS GE support
+- [ ] Advanced portfolio analytics
 - [ ] Clan war tracking
 - [ ] PvP loot value calculator
 - [ ] Collection log tracker
