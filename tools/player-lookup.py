@@ -92,11 +92,6 @@ def main():
     
     args = parser.parse_args()
     
-    print(f"\n🎮 Player Lookup - Lobster Edition")
-    print(f"=" * 60)
-    print(f"🔍 Searching: {args.player}")
-    print(f"=" * 60)
-    
     # Get hiscores
     hiscores = get_hiscores(args.player, args.osrs)
     

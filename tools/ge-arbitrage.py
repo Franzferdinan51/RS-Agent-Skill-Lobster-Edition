@@ -46,11 +46,14 @@ def get_item_detail(item_id: int) -> dict:
     return {}
 
 
-def parse_price(price_str: str) -> int:
+def parse_price(price_str) -> int:
     """Parse price string to integer."""
     if not price_str:
         return 0
-    price_str = price_str.lower().replace(",", "")
+    # Handle integer prices directly
+    if isinstance(price_str, int):
+        return price_str
+    price_str = str(price_str).lower().replace(",", "")
     multipliers = {"k": 1000, "m": 1000000, "b": 1000000000}
     for suffix, mult in multipliers.items():
         if suffix in price_str:

@@ -102,6 +102,7 @@ def main():
     parser.add_argument("--clan", type=str, default="Lords of Arcadia", help="Clan name")
     parser.add_argument("--output", type=str, help="Save results to JSON file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Show progress")
+    parser.add_argument("--json", action="store_true", help="JSON output")
     parser.add_argument("--rate-limit", type=int, default=200, help="Rate limit in ms")
     
     args = parser.parse_args()
@@ -159,6 +160,26 @@ def main():
     
     capped_members.sort(key=lambda x: x["cap_date"] or datetime.min, reverse=True)
     visited_only.sort(key=lambda x: x["visit_date"] or datetime.min, reverse=True)
+    
+    # Convert datetime to string for JSON
+    for member in capped_members + visited_only:
+        if member.get("cap_date"):
+            member["cap_date"] = member["cap_date"].isoformat()
+        if member.get("visit_date"):
+            member["visit_date"] = member["visit_date"].isoformat()
+    
+    # JSON output
+    if args.json:
+        output = {
+            "clan": args.clan,
+            "since": args.since,
+            "checked_at": datetime.now().isoformat(),
+            "total_members": len(members),
+            "capped": capped_members,
+            "visited_only": visited_only
+        }
+        print(json.dumps(output, indent=2))
+        sys.exit(0)
     
     print(f"\n{'=' * 60}")
     print(f"📊 RESULTS")

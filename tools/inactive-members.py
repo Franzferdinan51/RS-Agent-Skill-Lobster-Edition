@@ -109,6 +109,7 @@ def main():
     parser.add_argument("--output", type=str, help="Save results to JSON file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Show progress")
     parser.add_argument("--all", action="store_true", help="Show all members")
+    parser.add_argument("--json", action="store_true", help="JSON output")
     parser.add_argument("--rate-limit", type=int, default=150, help="Rate limit in ms")
     
     args = parser.parse_args()
@@ -161,6 +162,25 @@ def main():
         print()
     
     inactive_members.sort(key=lambda x: x.get("days_inactive") or 0, reverse=True)
+    
+    # Convert datetime to string for JSON
+    for m in inactive_members:
+        if m.get("last_activity"):
+            m["last_activity"] = m["last_activity"].isoformat()
+    
+    # JSON output
+    if args.json:
+        output = {
+            "clan": args.clan,
+            "checked_at": datetime.now().isoformat(),
+            "inactivity_threshold_days": args.days,
+            "total_members": len(members),
+            "inactive_members": inactive_members,
+            "active_count": len(active_members),
+            "error_count": len(error_members)
+        }
+        print(json.dumps(output, indent=2))
+        sys.exit(0)
     
     print(f"\n{'=' * 70}\n📊 RESULTS\n{'=' * 70}")
     
