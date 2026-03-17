@@ -299,12 +299,31 @@ python3 tools/ge-arbitrage.py --output opportunities.json
 ## 🔧 Installation
 
 ### Requirements
-- Python 3.8+
-- pip package manager
-- Git (for cloning)
+- **Python 3.8+** - Works on Windows, Linux, macOS
+- **pip** - Python package manager
+- **Git** - For cloning (optional, can download ZIP)
 
-### Standard Installation
+### Quick Install (All Platforms)
+
+**Windows:**
+```cmd
+git clone https://github.com/Franzferdinan51/RS-Agent-Skill-Lobster-Edition.git
+cd RS-Agent-Skill-Lobster-Edition
+setup.bat
+```
+
+**Linux/macOS:**
 ```bash
+git clone https://github.com/Franzferdinan51/RS-Agent-Skill-Lobster-Edition.git
+cd RS-Agent-Skill-Lobster-Edition
+chmod +x setup.sh
+./setup.sh
+```
+
+### Manual Installation
+
+**Windows (PowerShell/CMD):**
+```cmd
 # Clone repository
 git clone https://github.com/Franzferdinan51/RS-Agent-Skill-Lobster-Edition.git
 cd RS-Agent-Skill-Lobster-Edition
@@ -312,12 +331,71 @@ cd RS-Agent-Skill-Lobster-Edition
 # Install dependencies
 pip install -r requirements.txt
 
-# Make tools executable (Unix/Linux/macOS)
-chmod +x tools/*.py
+# Create directories
+mkdir data\portfolio data\collection config logs
+
+# Test installation
+python tools\runescape-api.py --clan "Lords of Arcadia"
+```
+
+**Linux/macOS (Terminal):**
+```bash
+# Clone repository
+git clone https://github.com/Franzferdinan51/RS-Agent-Skill-Lobster-Edition.git
+cd RS-Agent-Skill-Lobster-Edition
+
+# Install dependencies
+pip3 install -r requirements.txt
+
+# Create directories
+mkdir -p data/portfolio data/collection config logs
 
 # Test installation
 python3 tools/runescape-api.py --clan "Lords of Arcadia"
 ```
+
+### Platform-Specific Notes
+
+**Windows:**
+- Use `python` instead of `python3`
+- Use `pip` instead of `pip3`
+- Backslashes in paths: `data\portfolio`
+- Use Command Prompt, PowerShell, or WSL2
+
+**Linux:**
+- Use `python3` and `pip3`
+- Forward slashes in paths: `data/portfolio`
+- May need `sudo` for system-wide installs
+- systemd for auto-start services
+
+**macOS:**
+- Use `python3` and `pip3`
+- May need to install Xcode Command Line Tools
+- launchd for auto-start services
+- SIP may restrict some operations
+
+### Cross-Platform Features
+
+✅ **All tools work on Windows, Linux, and macOS**
+✅ **Paths handled automatically** (no hardcoded `/` or `\`)
+✅ **UTF-8 encoding** everywhere
+✅ **Cross-platform scripts** (`.bat` for Windows, `.sh` for Unix)
+✅ **File permissions** handled gracefully
+
+### Troubleshooting
+
+**Windows:**
+- If `python` not found, add to PATH or use full path
+- Run as Administrator if permission errors
+- Use WSL2 for Linux compatibility layer
+
+**Linux:**
+- Install Python: `sudo apt install python3-pip` (Debian/Ubuntu)
+- Install Python: `sudo dnf install python3-pip` (Fedora/RHEL)
+
+**macOS:**
+- Install Python from python.org or use Homebrew
+- Install Xcode Command Line Tools: `xcode-select --install`
 
 ### Discord Bot Installation
 ```bash
