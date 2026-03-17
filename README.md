@@ -500,32 +500,60 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ## 🎯 Roadmap
 
-### ✅ Completed (v1.0.0 - March 17, 2026)
-- [x] 9 CLI tools with JSON output
+### ✅ Completed (v2.0.0 - March 17, 2026)
+- [x] **12 CLI tools** with JSON output
 - [x] Full Discord bot integration
 - [x] GE trading suite with arbitrage
+- [x] **Advanced trading strategies** (bulk flip, merchant, trend)
 - [x] Portfolio tracker with P/L tracking
 - [x] Automated reports (email/Discord)
 - [x] OSRS hiscores support
 - [x] LM Studio MCP integration
-- [x] Comprehensive documentation (95KB)
+- [x] **PvP loot calculator**
+- [x] **Collection log tracker**
+- [x] Comprehensive documentation (100KB+)
 - [x] OpenClaw native integration
 - [x] Agent-first architecture
 - [x] Testing & validation
 - [x] Bug fixes & optimizations
 
 ### 📋 Future Enhancements
-- [ ] More GE trading strategies
-- [ ] Advanced portfolio analytics
 - [ ] Clan war tracking
-- [ ] PvP loot value calculator
-- [ ] Collection log tracker
+- [ ] Achievement diary tracker
+- [ ] Multi-clan comparison
+- [ ] Wealth projections
 - [ ] Achievement diary tracker
 - [ ] Multi-clan comparison dashboard
 
 ---
 
-**Version:** 1.0.0  
+### 🆕 Advanced Features (v2.0.0)
+
+#### Advanced Trading
+```bash
+# Bulk flip calculator
+python3 tools/advanced-trading.py --strategy bulk-flip --item "Twisted bow" --buy-price 290000000 --sell-price 300000000
+
+# Merchant calculator
+python3 tools/advanced-trading.py --strategy merchant --target-profit 1000000 --margin 5.0
+
+# Trend analysis
+python3 tools/advanced-trading.py --strategy trend --item "Dragon scimitar"
+```
+
+#### PvP & Clan Features
+```bash
+# PvP loot calculator
+python3 tools/pvp-loot-calculator.py --kill --loot "Twisted bow" "Arcane sigil" --risk 10000000
+
+# Collection log tracker
+python3 tools/collection-log.py --add "Twisted bow" --category "Raids"
+python3 tools/collection-log.py --progress
+```
+
+---
+
+**Version:** 2.0.0  
 **Last Updated:** March 17, 2026  
 **Status:** ✅ Production Ready  
 **Total Downloads:** Growing! 🚀
