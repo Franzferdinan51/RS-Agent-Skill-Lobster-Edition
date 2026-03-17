@@ -45,7 +45,7 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=27
 
 ## 🎯 Features
 
-### 🛠️ CLI Tools (6 Tools - All Tested ✅)
+### 🛠️ CLI Tools (9 Tools - All Tested ✅)
 
 | Tool | Purpose | Status |
 |------|---------|--------|
@@ -55,6 +55,9 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=27
 | **player-lookup.py** | Player profile lookup (RS3 + OSRS) | ✅ Production |
 | **price-alert.py** | GE price monitoring with webhook alerts | ✅ Production |
 | **ge-arbitrage.py** | Arbitrage opportunity detector with profit calc | ✅ Production |
+| **osrs-hiscores.py** | 🆕 OSRS hiscores lookup | ✅ Production |
+| **portfolio-tracker.py** | 🆕 Wealth & investment tracking | ✅ Production |
+| **auto-report.py** | 🆕 Automated report generation | ✅ Production |
 
 **All tools support:**
 - ✅ `--json` flag for agent integration
@@ -90,9 +93,13 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=27
 - **Wealth Tracker** - Portfolio tracking, P/L analysis
 - **Anomaly Detector** - Statistical analysis (z-score, std dev)
 - **Price Spike Alerts** - Real-time monitoring with webhooks
+- **🆕 Price Prediction (ML)** - Machine learning price forecasting (7d, 30d, 90d)
+- **🆕 Portfolio Tracker** - Comprehensive wealth management with milestone tracking
 
 **Trading Documentation:**
 - [`docs/TRADING-GUIDE.md`](docs/TRADING-GUIDE.md) - Complete 10KB trading guide
+- [`docs/ML-GUIDE.md`](docs/ML-GUIDE.md) - ML price prediction guide
+- [`docs/PORTFOLIO-GUIDE.md`](docs/PORTFOLIO-GUIDE.md) - Portfolio management guide
 - Strategies for beginners to advanced traders
 - Risk management principles
 - Real trade examples with profit calculations
@@ -147,6 +154,11 @@ python3 tools/citadel-cap-tracker.py --since "2026-03-11" --json
 
 # Find inactive members (90+ days)
 python3 tools/inactive-members.py --days 90 --output inactive.json
+
+# 🆕 Automated Reports
+python3 tools/auto-report.py --type daily --output report.html
+python3 tools/auto-report.py --type clan --clan "Lords of Arcadia" --email user@example.com
+python3 tools/auto-report.py --type portfolio --webhook https://discord.com/webhook/...
 ```
 
 ### Player Lookup
@@ -159,6 +171,9 @@ python3 tools/player-lookup.py --player "Zezima" --full
 
 # OSRS hiscores
 python3 tools/player-lookup.py --player "Zezima" --osrs --json
+
+# Dedicated OSRS tool
+python3 tools/osrs-hiscores.py --player "Zezima"
 ```
 
 ### GE Trading
@@ -174,6 +189,15 @@ python3 tools/ge-arbitrage.py --scan-all --min-profit 10000 --min-roi 2.0
 
 # Export opportunities
 python3 tools/ge-arbitrage.py --scan-all --output opportunities.json
+
+# 🆕 ML Price Prediction
+python3 tools/price-prediction.py --item "Twisted bow" --predict 30d
+
+# 🆕 Portfolio Management
+python3 tools/portfolio-tracker.py --add "Twisted bow" --quantity 1 --buy-price 290000000
+python3 tools/portfolio-tracker.py --view
+python3 tools/portfolio-tracker.py --analyze
+python3 tools/wealth-history.py --log
 ```
 
 ---
@@ -253,15 +277,15 @@ python3 tools/ge-arbitrage.py --output opportunities.json
 
 | Metric | Count |
 |--------|-------|
-| **Total Files** | 15+ |
-| **Total Lines of Code** | ~6,000+ |
-| **Total Documentation** | ~75KB |
-| **CLI Tools** | 6 (all tested & working) |
+| **Total Files** | 18+ |
+| **Total Lines of Code** | ~8,500+ |
+| **Total Documentation** | ~85KB |
+| **CLI Tools** | 9 (all tested & working) |
 | **Discord Commands** | 7 slash commands |
-| **APIs Supported** | 4 (GE, Hiscores, Clan, Runemetrics) |
+| **APIs Supported** | 8 (RS3 + OSRS GE, Hiscores, Clan, Runemetrics) |
 | **Test Coverage** | All tools tested ✅ |
 | **Bug Fixes** | 4 tools fixed & validated |
-| **Commits** | 6 |
+| **Commits** | 8 |
 | **Last Updated** | March 17, 2026 |
 
 ---
