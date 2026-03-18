@@ -1,48 +1,49 @@
 #!/usr/bin/env python3
 """
-RS-Agent MCP Server - Lobster Edition
-=====================================
-Model Context Protocol (MCP) server for RuneScape tools.
+RS-Agent MCP Server - Lobster Edition (Fixed)
+=============================================
+Proper MCP protocol implementation for RuneScape tools.
 
-Allows LM Studio and other MCP clients to access all RuneScape tools.
-
-Features:
-- All 9 CLI tools exposed as MCP tools
-- Real-time GE data access
-- Clan management
-- Portfolio tracking
-- OSRS and RS3 support
-- Automated reports
+This server properly implements the MCP protocol including:
+- initialize handshake
+- tools/list
+- tools/call
+- Proper error handling
 
 Usage:
     python3 mcp-server.py
-    
-LM Studio Configuration:
-    Add to LM Studio MCP settings:
-    {
-      "mcpServers": {
-        "runescape": {
-          "command": "python3",
-          "args": ["/path/to/mcp-server.py"],
-          "cwd": "/path/to/rs-agent-tools"
-        }
-      }
-    }
 """
 
 import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+import asyncio
 
-# MCP Server Implementation
+# Tools directory
+TOOLS_DIR = Path(__file__).parent / "tools"
+
+
+class MCPProtocolError(Exception):
+    """MCP protocol error."""
+    def __init__(self, code: int, message: str, data: Any = None):
+        self.code = code
+        self.message = message
+        self.data = data
+        super().__init__(f"MCP error {code}: {message}")
+
+
 class RS_Agent_MCP_Server:
-    """MCP Server for RuneScape tools."""
+    """Proper MCP Server implementation for RuneScape tools."""
+    
+    PROTOCOL_VERSION = "2024-11-05"
+    SERVER_NAME = "rs-agent-mcp"
+    SERVER_VERSION = "2.0.2"
     
     def __init__(self):
-        self.tools_dir = Path(__file__).parent
         self.tools = self._register_tools()
+        self.initialized = False
     
     def _register_tools(self) -> List[Dict]:
         """Register all available tools."""
@@ -63,11 +64,12 @@ class RS_Agent_MCP_Server:
             },
             {
                 "name": "osrs_hiscores",
-                "description": "Lookup Old School RuneScape player hiscores and activity data.",
+                "description": "Lookup Old School RuneScape or RS3 player hiscores and activity data.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
                         "player": {"type": "string", "description": "Player name", "required": True},
+                        "game": {"type": "string", "enum": ["rs3", "osrs"], "default": "rs3", "description": "Game version"},
                         "skills_only": {"type": "boolean", "default": False, "description": "Show only skills"},
                         "activities_only": {"type": "boolean", "default": False, "description": "Show only activities"}
                     }
@@ -155,17 +157,96 @@ class RS_Agent_MCP_Server:
                         "format": {"type": "string", "enum": ["html", "json", "markdown"], "default": "html", "description": "Output format"}
                     }
                 }
+            },
+            {
+                "name": "advanced_trading",
+                "description": "Advanced GE trading strategies (bulk flip, merchant, trend).",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "strategy": {"type": "string", "enum": ["bulk-flip", "merchant", "trend"], "required": True, "description": "Trading strategy"},
+                        "item": {"type": "string", "description": "Item name"},
+                        "buy_price": {"type": "integer", "description": "Buy price per item"},
+                        "sell_price": {"type": "integer", "description": "Sell price per item"},
+                        "quantity": {"type": "integer", "default": 100, "description": "Quantity to flip"},
+                        "target_profit": {"type": "integer", "description": "Target profit (for merchant)"},
+                        "margin": {"type": "number", "default": 5.0, "description": "Target margin %"}
+                    }
+                }
+            },
+            {
+                "name": "pvp_loot",
+                "description": "Calculate PvP loot values and profit/loss.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "kill": {"type": "boolean", "description": "Calculate single kill profit"},
+                        "loot": {"type": "array", "items": {"type": "string"}, "description": "Loot items received"},
+                        "risk": {"type": "integer", "default": 0, "description": "Risk value (gear lost on death)"},
+                        "session": {"type": "boolean", "description": "Track full session"},
+                        "value": {"type": "integer", "description": "Total loot value (for session)"}
+                    }
+                }
+            },
+            {
+                "name": "collection_log",
+                "description": "Track collection log progress offline.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "add": {"type": "string", "description": "Add item to collection"},
+                        "category": {"type": "string", "description": "Item category"},
+                        "source": {"type": "string", "default": "", "description": "Item source"},
+                        "view": {"type": "boolean", "description": "View collection"},
+                        "progress": {"type": "boolean", "description": "Show progress"}
+                    }
+                }
+            },
+            {
+                "name": "multi_clan_compare",
+                "description": "Compare up to 5 clans side-by-side.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "clan": {"type": "array", "items": {"type": "string"}, "required": True, "description": "Clan names to compare (max 5)"},
+                        "output": {"type": "string", "description": "Export to file (JSON/HTML/Markdown)"}
+                    }
+                }
             }
         ]
     
-    def _run_tool(self, tool_name: str, args: List[str]) -> Dict:
+    def _run_tool(self, tool_name: str, arguments: Dict) -> Dict:
         """Run a CLI tool and return result."""
         try:
-            tool_path = self.tools_dir / "tools" / f"{tool_name}.py"
+            tool_path = TOOLS_DIR / f"{tool_name}.py"
             if not tool_path.exists():
                 return {"error": f"Tool not found: {tool_name}"}
             
-            cmd = ["python3", str(tool_path)] + args + ["--json"]
+            # Build command based on tool
+            cmd = [sys.executable, str(tool_path)]
+            
+            # Add arguments based on tool
+            if tool_name == "runescape-api":
+                if arguments.get("clan"):
+                    cmd.extend(["--clan", arguments["clan"]])
+                if arguments.get("player"):
+                    cmd.extend(["--player", arguments["player"]])
+                if arguments.get("item"):
+                    cmd.extend(["--item", arguments["item"]])
+                if arguments.get("item_id"):
+                    cmd.extend(["--item-id", str(arguments["item_id"])])
+                if arguments.get("game") == "osrs":
+                    cmd.append("--osrs")
+            
+            elif tool_name == "osrs-hiscores":
+                cmd.extend(["--player", arguments.get("player", "")])
+                if arguments.get("game"):
+                    cmd.extend(["--game", arguments["game"]])
+            
+            # Add --json flag for all tools
+            cmd.append("--json")
+            
+            # Run command
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             
             if result.returncode != 0:
@@ -177,157 +258,138 @@ class RS_Agent_MCP_Server:
                 return {"output": result.stdout}
         
         except subprocess.TimeoutExpired:
-            return {"error": "Tool execution timed out"}
+            return {"error": "Tool execution timed out (60s)"}
         except Exception as e:
             return {"error": str(e)}
     
-    def handle_tool_call(self, tool_name: str, arguments: Dict) -> Dict:
-        """Handle MCP tool call."""
-        
-        if tool_name == "runescape_api":
-            args = []
-            if arguments.get("clan"):
-                args.extend(["--clan", arguments["clan"]])
-            if arguments.get("player"):
-                args.extend(["--player", arguments["player"]])
-            if arguments.get("item"):
-                args.extend(["--item", arguments["item"]])
-            if arguments.get("item_id"):
-                args.extend(["--item-id", str(arguments["item_id"])])
-            if arguments.get("game") == "osrs":
-                args.append("--osrs")
-            return self._run_tool("runescape-api", args)
-        
-        elif tool_name == "osrs_hiscores":
-            args = ["--player", arguments["player"]]
-            if arguments.get("skills_only"):
-                args.append("--skills")
-            if arguments.get("activities_only"):
-                args.append("--activities")
-            return self._run_tool("osrs-hiscores", args)
-        
-        elif tool_name == "citadel_tracker":
-            args = ["--clan", arguments["clan"], "--since", arguments.get("since", "2026-03-11")]
-            return self._run_tool("citadel-cap-tracker", args)
-        
-        elif tool_name == "inactive_members":
-            args = ["--clan", arguments["clan"], "--days", str(arguments.get("days", 90))]
-            return self._run_tool("inactive-members", args)
-        
-        elif tool_name == "player_lookup":
-            args = ["--player", arguments["player"]]
-            if arguments.get("game") == "osrs":
-                args.append("--osrs")
-            if arguments.get("full"):
-                args.append("--full")
-            return self._run_tool("player-lookup", args)
-        
-        elif tool_name == "price_alert":
-            args = ["--item", arguments["item"], "--threshold", str(arguments["threshold"])]
-            if arguments.get("continuous"):
-                args.append("--continuous")
-            return self._run_tool("price-alert", args)
-        
-        elif tool_name == "ge_arbitrage":
-            args = []
-            if arguments.get("scan_all"):
-                args.append("--scan-all")
-            args.extend(["--min-profit", str(arguments.get("min_profit", 10000))])
-            args.extend(["--min-roi", str(arguments.get("min_roi", 1.0))])
-            return self._run_tool("ge-arbitrage", args)
-        
-        elif tool_name == "portfolio_tracker":
-            action = arguments.get("action", "view")
-            args = [f"--{action}"]
-            
-            if action == "add" and arguments.get("item"):
-                args.extend([arguments["item"]])
-                if arguments.get("quantity"):
-                    args.extend(["--quantity", str(arguments["quantity"])])
-                if arguments.get("buy_price"):
-                    args.extend(["--buy-price", str(arguments["buy_price"])])
-            elif action == "remove" and arguments.get("item"):
-                args.append(arguments["item"])
-            
-            return self._run_tool("portfolio-tracker", args)
-        
-        elif tool_name == "auto_report":
-            args = ["--type", arguments["type"], "--format", arguments.get("format", "html")]
-            if arguments.get("clan"):
-                args.extend(["--clan", arguments["clan"]])
-            return self._run_tool("auto-report", args)
-        
-        else:
-            return {"error": f"Unknown tool: {tool_name}"}
-
-
-def main():
-    """Run MCP server."""
-    server = RS_Agent_MCP_Server()
-    
-    print(json.dumps({
-        "jsonrpc": "2.0",
-        "id": 1,
-        "result": {
-            "protocolVersion": "2024-11-05",
+    def handle_initialize(self, params: Dict) -> Dict:
+        """Handle initialize request."""
+        self.initialized = True
+        return {
+            "protocolVersion": self.PROTOCOL_VERSION,
             "capabilities": {
                 "tools": {}
             },
             "serverInfo": {
-                "name": "rs-agent-mcp",
-                "version": "1.0.0"
+                "name": self.SERVER_NAME,
+                "version": self.SERVER_VERSION
             }
         }
-    }), flush=True)
     
-    # Read and process MCP requests
+    def handle_tools_list(self, params: Dict) -> Dict:
+        """Handle tools/list request."""
+        return {
+            "tools": self.tools
+        }
+    
+    def handle_tools_call(self, params: Dict) -> Dict:
+        """Handle tools/call request."""
+        tool_name = params.get("name")
+        arguments = params.get("arguments", {})
+        
+        # Map MCP tool names to CLI tool names
+        tool_map = {
+            "runescape_api": "runescape-api",
+            "osrs_hiscores": "osrs-hiscores",
+            "citadel_tracker": "citadel-cap-tracker",
+            "inactive_members": "inactive-members",
+            "player_lookup": "player-lookup",
+            "price_alert": "price-alert",
+            "ge_arbitrage": "ge-arbitrage",
+            "portfolio_tracker": "portfolio-tracker",
+            "auto_report": "auto-report",
+            "advanced_trading": "advanced-trading",
+            "pvp_loot": "pvp-loot-calculator",
+            "collection_log": "collection-log",
+            "multi_clan_compare": "multi-clan-compare"
+        }
+        
+        cli_tool_name = tool_map.get(tool_name, tool_name)
+        result = self._run_tool(cli_tool_name, arguments)
+        
+        return {
+            "content": [
+                {
+                    "type": "text",
+                    "text": json.dumps(result, indent=2)
+                }
+            ]
+        }
+    
+    def handle_request(self, request: Dict) -> Dict:
+        """Handle incoming MCP request."""
+        method = request.get("method")
+        params = request.get("params", {})
+        request_id = request.get("id")
+        
+        try:
+            if method == "initialize":
+                result = self.handle_initialize(params)
+            elif method == "notifications/initialized":
+                # Just acknowledge, no response needed
+                return None
+            elif method == "tools/list":
+                result = self.handle_tools_list(params)
+            elif method == "tools/call":
+                result = self.handle_tools_call(params)
+            else:
+                raise MCPProtocolError(-32601, f"Method not found: {method}")
+            
+            return {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "result": result
+            }
+        
+        except MCPProtocolError as e:
+            return {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": e.code,
+                    "message": e.message,
+                    "data": e.data
+                }
+            }
+        except Exception as e:
+            return {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": -32603,
+                    "message": f"Internal error: {str(e)}"
+                }
+            }
+
+
+def main():
+    """Run MCP server with proper protocol."""
+    server = RS_Agent_MCP_Server()
+    
+    # Send initialization response
+    init_response = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+            "protocolVersion": server.PROTOCOL_VERSION,
+            "capabilities": {
+                "tools": {}
+            },
+            "serverInfo": {
+                "name": server.SERVER_NAME,
+                "version": server.SERVER_VERSION
+            }
+        }
+    }
+    print(json.dumps(init_response), flush=True)
+    
+    # Process requests
     for line in sys.stdin:
         try:
-            request = json.loads(line)
+            request = json.loads(line.strip())
+            response = server.handle_request(request)
             
-            if request.get("method") == "tools/list":
-                # Return available tools
-                response = {
-                    "jsonrpc": "2.0",
-                    "id": request.get("id"),
-                    "result": {
-                        "tools": server.tools
-                    }
-                }
-                print(json.dumps(response), flush=True)
-            
-            elif request.get("method") == "tools/call":
-                # Call a tool
-                params = request.get("params", {})
-                tool_name = params.get("name")
-                arguments = params.get("arguments", {})
-                
-                result = server.handle_tool_call(tool_name, arguments)
-                
-                response = {
-                    "jsonrpc": "2.0",
-                    "id": request.get("id"),
-                    "result": {
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": json.dumps(result, indent=2)
-                            }
-                        ]
-                    }
-                }
-                print(json.dumps(response), flush=True)
-            
-            else:
-                # Unknown method
-                response = {
-                    "jsonrpc": "2.0",
-                    "id": request.get("id"),
-                    "error": {
-                        "code": -32601,
-                        "message": f"Unknown method: {request.get('method')}"
-                    }
-                }
+            if response:
                 print(json.dumps(response), flush=True)
         
         except json.JSONDecodeError:
@@ -335,10 +397,10 @@ def main():
         except Exception as e:
             error_response = {
                 "jsonrpc": "2.0",
-                "id": request.get("id") if 'request' in locals() else None,
+                "id": None,
                 "error": {
                     "code": -32603,
-                    "message": str(e)
+                    "message": f"Internal error: {str(e)}"
                 }
             }
             print(json.dumps(error_response), flush=True)
