@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-RS-Agent MCP Server - Lobster Edition (Fixed)
-=============================================
-Proper MCP protocol implementation for RuneScape tools.
+RS-Agent MCP Server - Lobster Edition (v2.0.7 - Fully Fixed)
+============================================================
+Properly implements MCP protocol with correct argument handling.
 
-This server properly implements the MCP protocol including:
-- initialize handshake
-- tools/list
-- tools/call
-- Proper error handling
+Fixes:
+- Empty responses (tools not executing)
+- Argument type errors (booleans, integers)
+- Proper CLI argument mapping
+- Error handling and debugging
 
 Usage:
     python3 mcp-server.py
@@ -19,27 +19,18 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import asyncio
+import traceback
 
 # Tools directory
 TOOLS_DIR = Path(__file__).parent / "tools"
 
 
-class MCPProtocolError(Exception):
-    """MCP protocol error."""
-    def __init__(self, code: int, message: str, data: Any = None):
-        self.code = code
-        self.message = message
-        self.data = data
-        super().__init__(f"MCP error {code}: {message}")
-
-
 class RS_Agent_MCP_Server:
-    """Proper MCP Server implementation for RuneScape tools."""
+    """MCP Server implementation for RuneScape tools."""
     
     PROTOCOL_VERSION = "2024-11-05"
     SERVER_NAME = "rs-agent-mcp"
-    SERVER_VERSION = "2.0.2"
+    SERVER_VERSION = "2.0.7"
     
     def __init__(self):
         self.tools = self._register_tools()
@@ -216,51 +207,170 @@ class RS_Agent_MCP_Server:
         ]
     
     def _run_tool(self, tool_name: str, arguments: Dict) -> Dict:
-        """Run a CLI tool and return result."""
+        """Run a CLI tool and return result with proper error handling."""
         try:
             tool_path = TOOLS_DIR / f"{tool_name}.py"
             if not tool_path.exists():
-                return {"error": f"Tool not found: {tool_name}"}
+                return {"error": f"Tool not found: {tool_name}", "tool_path": str(tool_path)}
             
             # Build command based on tool
             cmd = [sys.executable, str(tool_path)]
             
-            # Add arguments based on tool
+            # Add arguments based on tool with proper type handling
             if tool_name == "runescape-api":
                 if arguments.get("clan"):
-                    cmd.extend(["--clan", arguments["clan"]])
+                    cmd.extend(["--clan", str(arguments["clan"])])
                 if arguments.get("player"):
-                    cmd.extend(["--player", arguments["player"]])
+                    cmd.extend(["--player", str(arguments["player"])])
                 if arguments.get("item"):
-                    cmd.extend(["--item", arguments["item"]])
+                    cmd.extend(["--item", str(arguments["item"])])
                 if arguments.get("item_id"):
                     cmd.extend(["--item-id", str(arguments["item_id"])])
                 if arguments.get("game") == "osrs":
                     cmd.append("--osrs")
             
             elif tool_name == "osrs-hiscores":
-                cmd.extend(["--player", arguments.get("player", "")])
+                cmd.extend(["--player", str(arguments.get("player", ""))])
                 if arguments.get("game"):
-                    cmd.extend(["--game", arguments["game"]])
+                    cmd.extend(["--game", str(arguments["game"])])
+                if arguments.get("skills_only") is True:
+                    cmd.append("--skills")
+                if arguments.get("activities_only") is True:
+                    cmd.append("--activities")
             
-            # Add --json flag for all tools
+            elif tool_name == "citadel-cap-tracker":
+                cmd.extend(["--clan", str(arguments.get("clan", ""))])
+                if arguments.get("since"):
+                    cmd.extend(["--since", str(arguments["since"])])
+            
+            elif tool_name == "inactive-members":
+                cmd.extend(["--clan", str(arguments.get("clan", ""))])
+                if arguments.get("days"):
+                    cmd.extend(["--days", str(arguments["days"])])
+            
+            elif tool_name == "player-lookup":
+                cmd.extend(["--player", str(arguments.get("player", ""))])
+                if arguments.get("game") == "osrs":
+                    cmd.append("--osrs")
+                if arguments.get("full") is True:
+                    cmd.append("--full")
+            
+            elif tool_name == "price-alert":
+                cmd.extend(["--item", str(arguments.get("item", ""))])
+                if arguments.get("threshold"):
+                    cmd.extend(["--threshold", str(arguments["threshold"])])
+                if arguments.get("continuous") is True:
+                    cmd.append("--continuous")
+            
+            elif tool_name == "ge-arbitrage":
+                if arguments.get("scan_all") is True:
+                    cmd.append("--scan-all")
+                if arguments.get("min_profit"):
+                    cmd.extend(["--min-profit", str(arguments["min_profit"])])
+                if arguments.get("min_roi"):
+                    cmd.extend(["--min-roi", str(arguments["min_roi"])])
+            
+            elif tool_name == "portfolio-tracker":
+                action = arguments.get("action", "view")
+                cmd.append(f"--{action}")
+                if action == "add" and arguments.get("item"):
+                    cmd.append(str(arguments["item"]))
+                    if arguments.get("quantity"):
+                        cmd.extend(["--quantity", str(arguments["quantity"])])
+                    if arguments.get("buy_price"):
+                        cmd.extend(["--buy-price", str(arguments["buy_price"])])
+                elif action == "remove" and arguments.get("item"):
+                    cmd.append(str(arguments["item"]))
+            
+            elif tool_name == "auto-report":
+                cmd.extend(["--type", str(arguments.get("type", "daily"))])
+                if arguments.get("clan"):
+                    cmd.extend(["--clan", str(arguments["clan"])])
+                if arguments.get("format"):
+                    cmd.extend(["--format", str(arguments["format"])])
+            
+            elif tool_name == "advanced-trading":
+                cmd.extend(["--strategy", str(arguments.get("strategy", "bulk-flip"))])
+                if arguments.get("item"):
+                    cmd.extend(["--item", str(arguments["item"])])
+                if arguments.get("buy_price"):
+                    cmd.extend(["--buy-price", str(arguments["buy_price"])])
+                if arguments.get("sell_price"):
+                    cmd.extend(["--sell-price", str(arguments["sell_price"])])
+                if arguments.get("quantity"):
+                    cmd.extend(["--quantity", str(arguments["quantity"])])
+                if arguments.get("target_profit"):
+                    cmd.extend(["--target-profit", str(arguments["target_profit"])])
+                if arguments.get("margin"):
+                    cmd.extend(["--margin", str(arguments["margin"])])
+            
+            elif tool_name == "pvp-loot-calculator":
+                if arguments.get("kill") is True:
+                    cmd.append("--kill")
+                if arguments.get("loot"):
+                    for item in arguments["loot"]:
+                        cmd.extend(["--loot", str(item)])
+                if arguments.get("risk"):
+                    cmd.extend(["--risk", str(arguments["risk"])])
+                if arguments.get("session") is True:
+                    cmd.append("--session")
+                if arguments.get("value"):
+                    cmd.extend(["--value", str(arguments["value"])])
+            
+            elif tool_name == "collection-log":
+                if arguments.get("add"):
+                    cmd.extend(["--add", str(arguments["add"])])
+                if arguments.get("category"):
+                    cmd.extend(["--category", str(arguments["category"])])
+                if arguments.get("source"):
+                    cmd.extend(["--source", str(arguments["source"])])
+                if arguments.get("view") is True:
+                    cmd.append("--view")
+                if arguments.get("progress") is True:
+                    cmd.append("--progress")
+            
+            elif tool_name == "multi-clan-compare":
+                clans = arguments.get("clan", [])
+                for clan in clans:
+                    cmd.extend(["--clan", str(clan)])
+                if arguments.get("output"):
+                    cmd.extend(["--output", str(arguments["output"])])
+            
+            # Always add --json flag
             cmd.append("--json")
+            
+            # Debug logging
+            print(f"DEBUG: Running command: {' '.join(cmd)}", file=sys.stderr)
             
             # Run command
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             
+            # Check for errors
             if result.returncode != 0:
-                return {"error": result.stderr}
+                return {
+                    "error": f"Tool execution failed",
+                    "stderr": result.stderr,
+                    "stdout": result.stdout[:500] if result.stdout else None,
+                    "returncode": result.returncode
+                }
             
+            # Parse JSON output
             try:
                 return json.loads(result.stdout)
-            except:
-                return {"output": result.stdout}
+            except json.JSONDecodeError as e:
+                return {
+                    "error": f"Failed to parse JSON output",
+                    "parse_error": str(e),
+                    "stdout": result.stdout[:500] if result.stdout else None
+                }
         
         except subprocess.TimeoutExpired:
             return {"error": "Tool execution timed out (60s)"}
         except Exception as e:
-            return {"error": str(e)}
+            return {
+                "error": f"Unexpected error: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
     
     def handle_initialize(self, params: Dict) -> Dict:
         """Handle initialize request."""
@@ -278,9 +388,7 @@ class RS_Agent_MCP_Server:
     
     def handle_tools_list(self, params: Dict) -> Dict:
         """Handle tools/list request."""
-        return {
-            "tools": self.tools
-        }
+        return {"tools": self.tools}
     
     def handle_tools_call(self, params: Dict) -> Dict:
         """Handle tools/call request."""
@@ -305,18 +413,23 @@ class RS_Agent_MCP_Server:
         }
         
         cli_tool_name = tool_map.get(tool_name, tool_name)
+        
+        print(f"DEBUG: Calling tool {tool_name} -> {cli_tool_name} with args: {arguments}", file=sys.stderr)
+        
         result = self._run_tool(cli_tool_name, arguments)
+        
+        print(f"DEBUG: Tool result: {json.dumps(result, default=str)[:200]}", file=sys.stderr)
         
         return {
             "content": [
                 {
                     "type": "text",
-                    "text": json.dumps(result, indent=2)
+                    "text": json.dumps(result, indent=2, default=str)
                 }
             ]
         }
     
-    def handle_request(self, request: Dict) -> Dict:
+    def handle_request(self, request: Dict) -> Optional[Dict]:
         """Handle incoming MCP request."""
         method = request.get("method")
         params = request.get("params", {})
@@ -326,14 +439,20 @@ class RS_Agent_MCP_Server:
             if method == "initialize":
                 result = self.handle_initialize(params)
             elif method == "notifications/initialized":
-                # Just acknowledge, no response needed
                 return None
             elif method == "tools/list":
                 result = self.handle_tools_list(params)
             elif method == "tools/call":
                 result = self.handle_tools_call(params)
             else:
-                raise MCPProtocolError(-32601, f"Method not found: {method}")
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "error": {
+                        "code": -32601,
+                        "message": f"Method not found: {method}"
+                    }
+                }
             
             return {
                 "jsonrpc": "2.0",
@@ -341,23 +460,14 @@ class RS_Agent_MCP_Server:
                 "result": result
             }
         
-        except MCPProtocolError as e:
-            return {
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "error": {
-                    "code": e.code,
-                    "message": e.message,
-                    "data": e.data
-                }
-            }
         except Exception as e:
             return {
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "error": {
                     "code": -32603,
-                    "message": f"Internal error: {str(e)}"
+                    "message": f"Internal error: {str(e)}",
+                    "traceback": traceback.format_exc()
                 }
             }
 
@@ -372,9 +482,7 @@ def main():
         "id": 1,
         "result": {
             "protocolVersion": server.PROTOCOL_VERSION,
-            "capabilities": {
-                "tools": {}
-            },
+            "capabilities": {"tools": {}},
             "serverInfo": {
                 "name": server.SERVER_NAME,
                 "version": server.SERVER_VERSION
@@ -383,17 +491,30 @@ def main():
     }
     print(json.dumps(init_response), flush=True)
     
-    # Process requests
+    # Process requests (persistent connection)
     for line in sys.stdin:
         try:
-            request = json.loads(line.strip())
+            line = line.strip()
+            if not line:
+                continue
+            
+            request = json.loads(line)
             response = server.handle_request(request)
             
             if response:
                 print(json.dumps(response), flush=True)
         
-        except json.JSONDecodeError:
-            continue
+        except json.JSONDecodeError as e:
+            error_response = {
+                "jsonrpc": "2.0",
+                "id": None,
+                "error": {
+                    "code": -32700,
+                    "message": f"Parse error: {str(e)}"
+                }
+            }
+            print(json.dumps(error_response), flush=True)
+        
         except Exception as e:
             error_response = {
                 "jsonrpc": "2.0",
