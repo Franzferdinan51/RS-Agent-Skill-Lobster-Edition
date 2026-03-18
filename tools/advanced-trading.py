@@ -134,7 +134,7 @@ def main():
     parser.add_argument("--sell-price", type=int, help="Sell price per item")
     parser.add_argument("--quantity", type=int, default=100, help="Quantity to flip")
     parser.add_argument("--target-profit", type=int, help="Target profit (for merchant)")
-    parser.add_argument("--margin", type=float, default=5.0, help="Target margin %")
+    parser.add_argument("--margin", type=float, default=5.0, help="Target margin percentage")
     parser.add_argument("--json", action="store_true", help="JSON output")
     
     args = parser.parse_args()
