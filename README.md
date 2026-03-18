@@ -291,15 +291,16 @@ python3 tools/ge-arbitrage.py --output opportunities.json
 
 | Metric | Count |
 |--------|-------|
-| **Total Files** | 18+ |
-| **Total Lines of Code** | ~8,500+ |
-| **Total Documentation** | ~85KB |
-| **CLI Tools** | 9 (all tested & working) |
-| **Discord Commands** | 7 slash commands |
-| **APIs Supported** | 8 (RS3 + OSRS GE, Hiscores, Clan, Runemetrics) |
+| **Total Files** | 26+ |
+| **Total Lines of Code** | ~15,000+ |
+| **Total Documentation** | ~120KB |
+| **CLI Tools** | 13 (all tested & working) |
+| **Discord Bot** | 10 slash commands |
+| **MCP Tools** | 13 (LM Studio) |
+| **APIs Supported** | 8 (RS3 + OSRS) |
+| **Platforms** | 3 (Windows, Linux, macOS) |
 | **Test Coverage** | All tools tested ✅ |
-| **Bug Fixes** | 4 tools fixed & validated |
-| **Commits** | 8 |
+| **Commits** | 15+ |
 | **Last Updated** | March 17, 2026 |
 
 ---
@@ -635,10 +636,39 @@ python3 tools/collection-log.py --progress
 
 ---
 
-**Version:** 2.0.0  
+### 🤖 Discord Bot (10 Commands)
+
+```bash
+# Install Discord bot
+cd discord-bot
+pip install -r requirements.txt
+python3 bot.py
+
+# Commands available in Discord:
+/rs-clan - Get clan info
+/rs-player - Lookup hiscores (RS3/OSRS)
+/rs-item - Check GE prices
+/rs-arbitrage - Find opportunities
+/rs-portfolio - View portfolio
+/rs-add - Add item to portfolio
+/rs-remove - Remove item
+/rs-citadel - Track citadel caps
+/rs-inactive - Find inactive members
+/rs-help - Show all commands
+```
+
+---
+
+**Version:** 2.0.1  
 **Last Updated:** March 17, 2026  
 **Status:** ✅ Production Ready  
 **Total Downloads:** Growing! 🚀
+
+**Latest Changes (v2.0.1):**
+- 🤖 Enhanced Discord bot (10 commands)
+- 📚 Updated all documentation
+- 🧪 Comprehensive testing
+- 🔧 Bug fixes and improvements
 
 ---
 
