@@ -1,30 +1,34 @@
 # 🤖 LM Studio MCP Servers Configuration
 
-Complete MCP server configuration for LM Studio with free and paid options.
+Complete MCP server configuration for LM Studio with **14 free servers**!
 
 ---
 
-## 📦 Configured Servers
+## 📦 Configured Servers (14 Total)
 
 ### ✅ Enabled by Default (No API Key Required)
 
-| Server | Purpose | Cost | Status |
-|--------|---------|------|--------|
-| **runescape** | RuneScape API (13 tools) | Free | ✅ Enabled |
-| **filesystem** | File operations | Free | ✅ Enabled |
-| **git** | Git repository tools | Free | ✅ Enabled |
-| **memory** | Knowledge graph memory | Free | ✅ Enabled |
-| **fetch** | Web content fetching | Free | ✅ Enabled |
-| **time** | Time/date operations | Free | ✅ Enabled |
-| **jina-search** | AI search foundation | Free tier | ✅ Enabled |
+| Server | Purpose | Category | Status |
+|--------|---------|----------|--------|
+| **runescape** | RuneScape API (13 tools) | Gaming | ✅ Enabled |
+| **sequential-thinking** | Problem-solving framework | Productivity | ✅ Enabled |
+| **filesystem** | File operations | Development | ✅ Enabled |
+| **git** | Git repository tools | Development | ✅ Enabled |
+| **memory** | Knowledge graph memory | Productivity | ✅ Enabled |
+| **fetch** | Web content fetching | Search | ✅ Enabled |
+| **time** | Time/date operations | Utilities | ✅ Enabled |
+| **sqlite** | Database queries | Development | ✅ Enabled |
+| **jina-search** | AI search foundation | Search | ✅ Enabled |
+| **puppeteer** | Browser automation | Development | ✅ Enabled |
 
 ### ⏸️ Disabled (Requires Free API Key)
 
 | Server | Purpose | Free Tier | Status |
 |--------|---------|-----------|--------|
-| **brave-search** | Web search | 2,000 queries/month | ⏸️ Disabled |
-| **github** | GitHub API | 5,000 requests/hour | ⏸️ Disabled |
-| **weather** | Weather data | 60 calls/min | ⏸️ Disabled |
+| **brave-search** | Web search | 2,000 queries/month | ⏸️ Ready |
+| **github** | GitHub API | 5,000 requests/hour | ⏸️ Ready |
+| **weather** | Weather data | 60 calls/min | ⏸️ Ready |
+| **everything** | Reference/test server | Unlimited | ⏸️ Ready |
 
 ---
 
@@ -104,6 +108,89 @@ Check Twisted bow price
 Show my portfolio
 Find arbitrage opportunities
 ```
+
+---
+
+### 🧠 sequential-thinking (NEW!)
+**Purpose:** Structured problem-solving framework  
+**Tools:** Process thoughts, generate summaries, clear history  
+**Cost:** FREE - No API key needed  
+**Setup:** No setup required  
+
+**Example Usage:**
+```
+Help me think through this trading strategy step by step
+Break down this complex problem
+Generate a summary of our discussion
+```
+
+**Why It's Useful:**
+- Break complex problems into manageable steps
+- Reflective thinking process
+- Perfect for trading strategy development
+- Reduces impulsive decisions
+- Creates documented thought process
+
+---
+
+### 🗄️ sqlite (NEW!)
+**Purpose:** SQLite database operations  
+**Tools:** Query databases, inspect schemas, explain queries  
+**Cost:** FREE - No API key needed  
+**Setup:** No setup required  
+
+**Example Usage:**
+```
+Query my trading database
+Show me the schema
+Explain this query
+```
+
+**Why It's Useful:**
+- Store trading history locally
+- Query portfolio performance
+- Analyze trading patterns
+- No server required (file-based)
+
+---
+
+### 🌐 puppeteer (NEW!)
+**Purpose:** Browser automation  
+**Tools:** Navigate pages, take screenshots, extract content  
+**Cost:** FREE - No API key needed  
+**Setup:** No setup required  
+
+**Example Usage:**
+```
+Take a screenshot of this webpage
+Navigate to runescape.wiki and extract prices
+Fill out this form
+```
+
+**Why It's Useful:**
+- Automate web research
+- Capture price data from websites
+- Test web interfaces
+- Bypass API limitations
+
+---
+
+### 🧪 everything (Optional)
+**Purpose:** Reference/test server  
+**Tools:** Prompts, resources, tools (demo)  
+**Cost:** FREE - No API key needed  
+**Setup:** No setup required  
+
+**Example Usage:**
+```
+Test MCP functionality
+Explore available tools
+```
+
+**Why It's Useful:**
+- Learn MCP capabilities
+- Test your MCP setup
+- Reference implementation
 
 ---
 
@@ -239,16 +326,44 @@ Get 7-day forecast for Dayton
 
 ### For RuneScape Trading (Your Use Case)
 
-**Enable:**
-- ✅ runescape (essential)
+**Essential:**
+- ✅ runescape (game data - essential)
+- ✅ sequential-thinking (strategy development)
+- ✅ memory (remember portfolios, strategies)
+- ✅ sqlite (store trading history)
 - ✅ filesystem (save reports, configs)
-- ✅ memory (remember strategies, portfolios)
-- ✅ fetch (research items, guides)
-- ✅ brave-search (optional - for web research)
 
-**Disable:**
-- ❌ github (unless you manage repos)
-- ❌ weather (not relevant)
+**Recommended:**
+- ✅ fetch (research items, guides)
+- ✅ puppeteer (web automation)
+- ✅ brave-search (web research - get free API key)
+
+**Optional:**
+- ⏸️ github (only if managing code repos)
+- ⏸️ weather (not relevant for trading)
+
+### For General Development
+
+**Enable:**
+- ✅ filesystem
+- ✅ git
+- ✅ memory
+- ✅ sqlite
+- ✅ sequential-thinking
+- ✅ fetch
+- ✅ puppeteer
+- ✅ brave-search
+- ✅ github (if you code)
+
+### For Productivity & Research
+
+**Enable:**
+- ✅ sequential-thinking (problem-solving)
+- ✅ memory (knowledge management)
+- ✅ fetch (web research)
+- ✅ brave-search (web search)
+- ✅ time (scheduling)
+- ✅ puppeteer (automation)
 
 ---
 
