@@ -15,11 +15,18 @@ Complete MCP server configuration for LM Studio with **14 free servers**!
 | **filesystem** | File operations | Development | ✅ Enabled |
 | **git** | Git repository tools | Development | ✅ Enabled |
 | **memory** | Knowledge graph memory | Productivity | ✅ Enabled |
-| **fetch** | Web content fetching | Search | ✅ Enabled |
 | **time** | Time/date operations | Utilities | ✅ Enabled |
 | **sqlite** | Database queries | Development | ✅ Enabled |
 | **jina-search** | AI search foundation | Search | ✅ Enabled |
 | **puppeteer** | Browser automation | Development | ✅ Enabled |
+| **brave-search** | Web search (2000/month free) | Search | ✅ Enabled |
+| **weather** | Weather data (60/min free) | Utilities | ✅ Enabled |
+
+### ❌ Disabled (Known Issues)
+
+| Server | Issue | Alternative |
+|--------|-------|-------------|
+| **fetch** | Exits after first response | Use `puppeteer` or `brave-search` |
 
 ### ⏸️ Disabled (Requires Free API Key)
 
@@ -237,15 +244,23 @@ Store this trading strategy
 
 ---
 
-### 🌐 fetch
+### 🌐 fetch (DISABLED - Broken)
 **Purpose:** Web content fetching  
-**Tools:** Fetch URLs, convert to markdown  
-**Setup:** No setup required  
+**Status:** ❌ **DISABLED** - Known bugs  
+**Issue:** Exits after first response (GitHub issues #2464, #2517)  
+**Alternative:** Use `puppeteer` or `brave-search` instead  
 
-**Example Usage:**
+**Why Disabled:**
+- Violates MCP protocol (exits after first response)
+- Connection closed errors
+- Randomly fails on second/third use
+- Not production-ready
+
+**Alternatives:**
 ```
-Fetch this URL and summarize it
-Get the content of https://example.com
+✅ puppeteer - Browser automation (recommended)
+✅ brave-search - Web search with summaries (API key required)
+✅ jina-search - AI search foundation
 ```
 
 ---
