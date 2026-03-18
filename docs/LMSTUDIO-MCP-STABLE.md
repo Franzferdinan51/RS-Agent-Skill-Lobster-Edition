@@ -1,7 +1,7 @@
 # 🤖 LM Studio MCP Servers - STABLE Configuration
 
 **Last Updated:** March 17, 2026  
-**Version:** 2.0.4 (Stability Fix)
+**Version:** 2.0.5 (BrowserOS + Fixed Fetch)
 
 ---
 
@@ -22,10 +22,12 @@ Many official MCP servers have **critical bugs**:
 | Server | Purpose | Status |
 |--------|---------|--------|
 | **runescape** | RuneScape API (13 tools) | ✅ **WORKING** |
+| **browseros** | Browser automation | ✅ **WORKING** (NEW!) |
+| **fetch** | Web content fetching | ✅ **WORKING** (FIXED!) |
 | **filesystem** | File operations | ✅ **WORKING** |
 | **memory** | Knowledge graph | ✅ **WORKING** |
 
-**Start with just these 3!** They're stable and cover 90% of use cases.
+**Start with these 5!** They're stable and cover most use cases.
 
 ---
 
@@ -54,9 +56,14 @@ Many official MCP servers have **critical bugs**:
 
 | Server | Issue | Alternative |
 |--------|-------|-------------|
-| **fetch** | Exits after first response | Use `puppeteer` or `brave-search` |
 | **time** | Protocol errors | Use LLM's built-in time knowledge |
 | **everything** | Test server only | Not for production |
+
+## ✅ Fixed Servers
+
+| Server | Previous Issue | Status |
+|--------|----------------|--------|
+| **fetch** | Exited after first response | ✅ **FIXED** - Custom implementation |
 
 ---
 
