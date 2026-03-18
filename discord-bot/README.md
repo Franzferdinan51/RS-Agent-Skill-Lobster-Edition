@@ -44,29 +44,40 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=27
 
 ---
 
-## 🎮 Slash Commands
+## 🎮 Slash Commands (10 Enhanced Commands)
 
-### Clan Commands
+### 🛡️ Clan Commands
 
 | Command | Description | Example |
 |---------|-------------|---------|
 | `/rs-clan` | Get clan information | `/rs-clan clan:Lords of Arcadia` |
-| `/rs-citadel` | Check citadel capping | `/rs-citadel clan:Lords of Arcadia since:2026-03-11` |
+| `/rs-citadel` | Track citadel caps | `/rs-citadel clan:Lords of Arcadia` |
 | `/rs-inactive` | Find inactive members | `/rs-inactive clan:Lords of Arcadia days:90` |
 
-### Player Commands
+### 🎮 Player Commands
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/rs-player` | Lookup player stats | `/rs-player player:Zezima` |
-| `/rs-track` | Track player progress | `/rs-track player:Zezima skill:Attack` |
+| `/rs-player` | Lookup hiscores (RS3/OSRS) | `/rs-player player:Zezima game:osrs` |
+| `/rs-compare` | Compare players | `/rs-compare player1:Zezima player2:Runescape` |
 
-### Item Commands
+### 💰 Trading Commands
 
 | Command | Description | Example |
 |---------|-------------|---------|
 | `/rs-item` | Check GE price | `/rs-item item:Twisted bow` |
-| `/rs-price-alert` | Set price alert | `/rs-price-alert item:Twisted bow threshold:300000000` |
+| `/rs-arbitrage` | Find arbitrage opportunities | `/rs-arbitrage min-profit:10000 min-roi:2.0` |
+| `/rs-portfolio` | View your portfolio | `/rs-portfolio` |
+| `/rs-add` | Add item to portfolio | `/rs-add item:Twisted bow quantity:1 buy-price:290000000` |
+| `/rs-remove` | Remove item from portfolio | `/rs-remove item:Twisted bow` |
+
+### 📊 Utilities
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/rs-help` | Show all commands | `/rs-help` |
+| `/rs-stats` | Bot statistics | `/rs-stats` |
+| `/rs-alert` | Set price alert | `/rs-alert item:Twisted bow threshold:300000000` |
 
 ---
 
