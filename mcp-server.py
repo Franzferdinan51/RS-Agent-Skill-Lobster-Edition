@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-RS-Agent MCP Server - Lobster Edition (v2.0.7 - Fully Fixed)
+RS-Agent MCP Server - Lobster Edition (v2.0.8)
 ============================================================
 Properly implements MCP protocol with correct argument handling.
 
@@ -30,7 +30,7 @@ class RS_Agent_MCP_Server:
     
     PROTOCOL_VERSION = "2024-11-05"
     SERVER_NAME = "rs-agent-mcp"
-    SERVER_VERSION = "2.0.7"
+    SERVER_VERSION = "2.0.8"
     
     def __init__(self):
         self.tools = self._register_tools()
@@ -226,8 +226,8 @@ class RS_Agent_MCP_Server:
                     cmd.extend(["--item", str(arguments["item"])])
                 if arguments.get("item_id"):
                     cmd.extend(["--item-id", str(arguments["item_id"])])
-                if arguments.get("game") == "osrs":
-                    cmd.append("--osrs")
+                if arguments.get("game"):
+                    cmd.extend(["--game", str(arguments["game"]).lower()])
             
             elif tool_name == "osrs-hiscores":
                 cmd.extend(["--player", str(arguments.get("player", ""))])
@@ -420,7 +420,7 @@ class RS_Agent_MCP_Server:
         
         print(f"DEBUG: Tool result: {json.dumps(result, default=str)[:200]}", file=sys.stderr)
         
-        return {
+        response = {
             "content": [
                 {
                     "type": "text",
@@ -428,6 +428,9 @@ class RS_Agent_MCP_Server:
                 }
             ]
         }
+        if isinstance(result, dict) and "error" in result:
+            response["isError"] = True
+        return response
     
     def handle_request(self, request: Dict) -> Optional[Dict]:
         """Handle incoming MCP request."""
@@ -475,22 +478,7 @@ class RS_Agent_MCP_Server:
 def main():
     """Run MCP server with proper protocol."""
     server = RS_Agent_MCP_Server()
-    
-    # Send initialization response
-    init_response = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "result": {
-            "protocolVersion": server.PROTOCOL_VERSION,
-            "capabilities": {"tools": {}},
-            "serverInfo": {
-                "name": server.SERVER_NAME,
-                "version": server.SERVER_VERSION
-            }
-        }
-    }
-    print(json.dumps(init_response), flush=True)
-    
+
     # Process requests (persistent connection)
     for line in sys.stdin:
         try:
