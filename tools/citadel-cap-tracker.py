@@ -20,7 +20,7 @@ Usage:
 import argparse
 import json
 import sys
-import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -43,6 +43,7 @@ CLAN_BASE = "https://secure.runescape.com/m=clan-hiscores"
 RUNEMETRICS_BASE = "https://apps.runescape.com/runemetrics"
 DATE_FORMAT = "%d-%b-%Y %H:%M"
 USER_AGENT = "Mozilla/5.0 RS-Agent/1.0"
+PROFILE_TIMEOUT_SECONDS = 5
 
 
 def log(message: str = "", *, enabled: bool = True, end: str = "\n", flush: bool = False) -> None:
@@ -62,10 +63,12 @@ def get_clan_members(clan_name: str) -> List[str]:
     """Get all clan member names."""
     url = f"{CLAN_BASE}/members_lite.ws?clanName={clan_name.replace(' ', '+')}"
     try:
-        response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=10)
+        response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=PROFILE_TIMEOUT_SECONDS)
         if response.status_code != 200:
             return []
         lines = response.text.strip().split("\n")
+        if not lines or not lines[0].lower().startswith("clanmate"):
+            return []
         return [line.split(",")[0].replace("\u00a0", " ") for line in lines[1:] if line.split(",")]
     except Exception:
         return []
@@ -136,7 +139,8 @@ def main() -> None:
     parser.add_argument("--output", type=str, help="Save results to JSON file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Show progress")
     parser.add_argument("--json", action="store_true", help="JSON output")
-    parser.add_argument("--rate-limit", type=int, default=200, help="Rate limit in ms")
+    parser.add_argument("--workers", type=int, default=24, help="Concurrent Runemetrics requests")
+    parser.add_argument("--rate-limit", type=int, default=200, help="Deprecated; retained for compatibility")
 
     args = parser.parse_args()
     json_mode = args.json
@@ -175,30 +179,35 @@ def main() -> None:
     capped_members: List[Dict[str, object]] = []
     visited_only: List[Dict[str, object]] = []
 
-    for index, member in enumerate(members, 1):
-        if verbose:
-            log(f"[{index}/{len(members)}] Checking {member}...", enabled=True, end=" ", flush=True)
-        elif human_mode:
-            log(f"[{index}/{len(members)}] {member}", enabled=True, end="\r", flush=True)
+    max_workers = max(1, min(args.workers, len(members)))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_map = {
+            executor.submit(check_player_citadel_activity, member, since_date): member
+            for member in members
+        }
+        for index, future in enumerate(as_completed(future_map), 1):
+            member = future_map[future]
+            if verbose:
+                log(f"[{index}/{len(members)}] Checked {member}...", enabled=True, end=" ", flush=True)
+            elif human_mode:
+                log(f"[{index}/{len(members)}] {member}", enabled=True, end="\r", flush=True)
 
-        result = check_player_citadel_activity(member, since_date)
-        if result:
-            if result["cap_date"]:
-                capped_members.append(result)
-                if verbose:
-                    cap_date = result["cap_date"]
-                    assert isinstance(cap_date, datetime)
-                    log(f"CAPPED {cap_date.strftime('%m/%d')}", enabled=True)
-            elif result["visit_date"]:
-                visited_only.append(result)
-                if verbose:
-                    visit_date = result["visit_date"]
-                    assert isinstance(visit_date, datetime)
-                    log(f"Visited {visit_date.strftime('%m/%d')}", enabled=True)
-        elif verbose:
-            log("No citadel activity", enabled=True)
-
-        time.sleep(max(args.rate_limit, 0) / 1000)
+            result = future.result()
+            if result:
+                if result["cap_date"]:
+                    capped_members.append(result)
+                    if verbose:
+                        cap_date = result["cap_date"]
+                        assert isinstance(cap_date, datetime)
+                        log(f"CAPPED {cap_date.strftime('%m/%d')}", enabled=True)
+                elif result["visit_date"]:
+                    visited_only.append(result)
+                    if verbose:
+                        visit_date = result["visit_date"]
+                        assert isinstance(visit_date, datetime)
+                        log(f"Visited {visit_date.strftime('%m/%d')}", enabled=True)
+            elif verbose:
+                log("No citadel activity", enabled=True)
 
     if human_mode and not verbose:
         print()

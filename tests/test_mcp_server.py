@@ -41,6 +41,21 @@ class MCPServerTests(TestCase):
         self.assertNotIn("--osrs", cmd)
         self.assertEqual(cmd[cmd.index("--game") + 1], "osrs")
 
+    def test_large_clan_tools_use_extended_timeout(self):
+        server = self.module.RS_Agent_MCP_Server()
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout=json.dumps({"ok": True}),
+            stderr="",
+        )
+
+        with patch.object(self.module.subprocess, "run", return_value=completed) as mock_run:
+            result = server._run_tool("citadel-cap-tracker", {"clan": "Lords of Arcadia"})
+
+        self.assertEqual(result, {"ok": True})
+        self.assertEqual(mock_run.call_args.kwargs["timeout"], 120)
+
     def test_handle_tools_call_marks_error_results(self):
         server = self.module.RS_Agent_MCP_Server()
 

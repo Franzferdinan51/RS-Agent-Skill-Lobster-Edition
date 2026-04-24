@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-RS-Agent MCP Server - Lobster Edition (v2.0.8)
+RS-Agent MCP Server - Lobster Edition (v2.0.9)
 ============================================================
 Properly implements MCP protocol with correct argument handling.
 
@@ -30,7 +30,7 @@ class RS_Agent_MCP_Server:
     
     PROTOCOL_VERSION = "2024-11-05"
     SERVER_NAME = "rs-agent-mcp"
-    SERVER_VERSION = "2.0.8"
+    SERVER_VERSION = "2.0.9"
     
     def __init__(self):
         self.tools = self._register_tools()
@@ -342,8 +342,13 @@ class RS_Agent_MCP_Server:
             # Debug logging
             print(f"DEBUG: Running command: {' '.join(cmd)}", file=sys.stderr)
             
+            timeout = {
+                "citadel-cap-tracker": 120,
+                "inactive-members": 120,
+            }.get(tool_name, 60)
+            
             # Run command
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
             
             # Check for errors
             if result.returncode != 0:
@@ -364,8 +369,8 @@ class RS_Agent_MCP_Server:
                     "stdout": result.stdout[:500] if result.stdout else None
                 }
         
-        except subprocess.TimeoutExpired:
-            return {"error": "Tool execution timed out (60s)"}
+        except subprocess.TimeoutExpired as e:
+            return {"error": f"Tool execution timed out ({int(e.timeout)}s)"}
         except Exception as e:
             return {
                 "error": f"Unexpected error: {str(e)}",

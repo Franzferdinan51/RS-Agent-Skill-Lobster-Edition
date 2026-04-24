@@ -27,7 +27,7 @@ from typing import List, Dict
 try:
     import requests
 except ImportError:
-    print("❌ requests library not installed. Run: pip install -r requirements.txt")
+    print("requests library not installed. Run: pip install -r requirements.txt")
     sys.exit(1)
 
 GE_BASE = "https://secure.runescape.com/m=itemdb_rs/api"
@@ -132,9 +132,11 @@ def main():
     parser.add_argument("--json", action="store_true", help="JSON output")
     
     args = parser.parse_args()
+    human_mode = not args.json
     
-    print(f"\n💰 GE Arbitrage Detector - Lobster Edition")
-    print(f"=" * 60)
+    if human_mode:
+        print(f"\nGE Arbitrage Detector - Lobster Edition")
+        print(f"=" * 60)
     
     # Popular trading items (high volume)
     POPULAR_ITEMS = [
@@ -154,16 +156,24 @@ def main():
     
     if args.scan_all:
         item_ids = POPULAR_ITEMS
-        print(f"📊 Scanning {len(POPULAR_ITEMS)} popular trading items...\n")
+        if human_mode:
+            print(f"Scanning {len(POPULAR_ITEMS)} popular trading items...\n")
     elif args.item_ids:
         item_ids = args.item_ids
-        print(f"📊 Scanning {len(args.item_ids)} specified items...\n")
+        if human_mode:
+            print(f"Scanning {len(args.item_ids)} specified items...\n")
     elif args.items:
-        print(f"🔍 Looking up items...")
-        # Would need to search by name first
-        print("⚠️  Item name search not implemented yet. Use --item-ids instead.")
+        output = {"error": "Item name search not implemented yet. Use --item-ids instead."}
+        if args.json:
+            print(json.dumps(output, indent=2))
+            return
+        print("Looking up items...")
+        print("WARNING: Item name search not implemented yet. Use --item-ids instead.")
         sys.exit(1)
     else:
+        if args.json:
+            print(json.dumps({"error": "No items specified. Use --scan-all or --item-ids."}, indent=2))
+            return
         parser.print_help()
         sys.exit(1)
     
@@ -185,7 +195,7 @@ def main():
         print(json.dumps(output, indent=2))
     else:
         if filtered:
-            print(f"✅ Found {len(filtered)} arbitrage opportunities!\n")
+            print(f"Found {len(filtered)} arbitrage opportunities!\n")
             print(f"{'#':<4} {'Item':<25} {'Buy':<15} {'Target':<15} {'Profit':<15} {'ROI':<10}")
             print(f"{'-' * 84}")
             
@@ -197,7 +207,7 @@ def main():
                 
                 print(f"{i:<4} {opp['item_name']:<25} {buy_str:<15} {target_str:<15} {profit_str:<15} {roi_str:<10}")
         else:
-            print(f"❌ No arbitrage opportunities found with current thresholds")
+            print(f"No arbitrage opportunities found with current thresholds")
             print(f"   Try lowering --min-profit or --min-roi")
     
     # Save to file
@@ -208,21 +218,23 @@ def main():
             "opportunities_found": len(filtered),
             "opportunities": filtered
         }
-        with open(args.output, "w") as f:
+        with open(args.output, "w", encoding="utf-8") as f:
             json.dump(output_data, f, indent=2)
-        print(f"\n💾 Results saved to: {args.output}")
+        if human_mode:
+            print(f"\nResults saved to: {args.output}")
     
     # Summary
-    print(f"\n{'=' * 60}")
-    print(f"📊 SUMMARY")
-    print(f"{'=' * 60}")
-    print(f"Items scanned: {len(item_ids)}")
-    print(f"Opportunities found: {len(filtered)}")
-    if filtered:
-        best = filtered[0]
-        print(f"Best opportunity: {best['item_name']} ({best['roi']:.1f}% ROI, {best['profit']:,} gp profit)")
-    print(f"GE Tax: 5%")
-    print()
+    if human_mode:
+        print(f"\n{'=' * 60}")
+        print(f"SUMMARY")
+        print(f"{'=' * 60}")
+        print(f"Items scanned: {len(item_ids)}")
+        print(f"Opportunities found: {len(filtered)}")
+        if filtered:
+            best = filtered[0]
+            print(f"Best opportunity: {best['item_name']} ({best['roi']:.1f}% ROI, {best['profit']:,} gp profit)")
+        print(f"GE Tax: 5%")
+        print()
 
 
 if __name__ == "__main__":

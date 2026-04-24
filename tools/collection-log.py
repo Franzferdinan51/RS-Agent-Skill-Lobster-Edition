@@ -22,7 +22,7 @@ COLLECTION_FILE = Path("data/collection-log.json")
 def load_collection() -> dict:
     """Load collection data."""
     if COLLECTION_FILE.exists():
-        with open(COLLECTION_FILE, "r") as f:
+        with open(COLLECTION_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     return {"entries": [], "categories": {}, "started_at": datetime.now().isoformat()}
 
@@ -31,7 +31,7 @@ def save_collection(data: dict):
     """Save collection data."""
     COLLECTION_FILE.parent.mkdir(parents=True, exist_ok=True)
     data["last_updated"] = datetime.now().isoformat()
-    with open(COLLECTION_FILE, "w") as f:
+    with open(COLLECTION_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
 
@@ -88,7 +88,10 @@ def main():
     
     if args.add:
         if not args.category:
-            print("❌ --category required when adding item")
+            if args.json:
+                print(json.dumps({"error": "--category required when adding item"}, indent=2))
+                sys.exit(0)
+            print("ERROR: --category required when adding item")
             sys.exit(1)
         
         entry = add_entry(collection, args.add, args.category, args.source)
@@ -96,51 +99,57 @@ def main():
         
         if args.json:
             print(json.dumps({"status": "added", "entry": entry}, indent=2))
+            return
         else:
-            print(f"\n✅ Added to Collection Log:")
+            print(f"\nAdded to Collection Log:")
             print(f"   Item: {entry['item']}")
             print(f"   Category: {entry['category']}")
             if entry['source']:
                 print(f"   Source: {entry['source']}")
             print(f"   Obtained: {entry['obtained_at'][:10]}")
             print()
-        sys.exit(0)
+        return
     
     if args.view:
         if not collection["entries"]:
-            print("\n📭 Collection log is empty")
-            print("\n💡 Add items with:")
+            if args.json:
+                print(json.dumps(collection, indent=2))
+                return
+            print("\nCollection log is empty")
+            print("\nAdd items with:")
             print("   python3 tools/collection-log.py --add \"Twisted bow\" --category \"Raids\"")
             sys.exit(0)
         
         if args.json:
             print(json.dumps(collection, indent=2))
+            return
         else:
-            print(f"\n📖 Collection Log")
+            print(f"\nCollection Log")
             print(f"{'=' * 60}")
             print(f"Total Items: {len(collection['entries'])}")
             print(f"Categories: {len(collection['categories'])}")
-            print(f"\n📋 Entries:")
+            print(f"\nEntries:")
             for entry in collection["entries"][-20:]:  # Last 20 items
-                print(f"   • {entry['item']} ({entry['category']})")
+                print(f"   - {entry['item']} ({entry['category']})")
             print()
-        sys.exit(0)
+        return
     
     if args.progress:
         progress = calculate_progress(collection)
         
         if args.json:
             print(json.dumps(progress, indent=2))
+            return
         else:
-            print(f"\n📊 Collection Progress")
+            print(f"\nCollection Progress")
             print(f"{'=' * 60}")
             print(f"Total Items: {progress['total_entries']}")
             print(f"Categories: {progress['total_categories']}")
-            print(f"\n📋 Category Breakdown:")
+            print(f"\nCategory Breakdown:")
             for cat, data in progress['category_breakdown'].items():
                 print(f"   {cat}: {data['count']} items")
             print()
-        sys.exit(0)
+        return
     
     parser.print_help()
     sys.exit(1)
